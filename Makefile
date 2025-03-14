@@ -6,3 +6,6 @@ r-check:
 
 r-fix:
 	uv run ruff check --fix
+
+r-format:
+	uv run ruff format
