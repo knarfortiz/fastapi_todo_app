@@ -1,6 +1,11 @@
-from fastapi import APIRouter
-from passlib.context import CryptContext
+from typing import Annotated
 
+from fastapi import APIRouter, Depends
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+from starlette import status
+
+from database import SessionLocal
 from models import Users
 from requests import CreateUserRequest
 
@@ -9,13 +14,24 @@ router = APIRouter()
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-@router.get("/auth/")
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+db_dependency = Annotated[Session, Depends(get_db)]
+
+
+@router.get("/auth")
 async def get_user():
     return {"user": "authenticated"}
 
 
-@router.post("/auth/")
-async def create_user(user_request: CreateUserRequest):
+@router.post("/auth", status_code=status.HTTP_201_CREATED)
+async def create_user(db: db_dependency, user_request: CreateUserRequest):
     user = Users(
         email=user_request.email,
         username=user_request.username,
@@ -26,4 +42,12 @@ async def create_user(user_request: CreateUserRequest):
         is_active=True,
     )
 
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
     return user
+
+@router.post("/token")
+async def login_for_access_token():
+    return "token"
