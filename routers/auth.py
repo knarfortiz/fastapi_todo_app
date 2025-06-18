@@ -71,9 +71,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
 
+user_dependency = Annotated[dict, Depends(get_current_user)]
+
+
 @router.get("/")
-async def get_user():
-    return {"user": "authenticated"}
+async def get_user(user: user_dependency):
+    return {"user": user}
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)

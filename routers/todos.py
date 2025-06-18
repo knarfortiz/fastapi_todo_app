@@ -34,8 +34,15 @@ async def read_all(user: user_dependency, db: db_dependency):
 
 
 @router.get("/{todo_id}", status_code=status.HTTP_200_OK)
-async def read_todo(db: db_dependency, todo_id: int = Path(gt=0)):
-    todo = db.query(Todos).filter(Todos.id == todo_id).first()
+async def read_todo(
+    user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)
+):
+    todo = (
+        db.query(Todos)
+        .filter(Todos.id == todo_id)
+        .filter(Todos.owner_id == user["id"])
+        .first()
+    )
     if todo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
@@ -59,9 +66,17 @@ async def create_todo(
 
 @router.put("/{todo_id}", status_code=status.HTTP_200_OK)
 async def update_todo(
-    db: db_dependency, todo_request: TodoRequest, todo_id: int = Path(gt=0)
+    user: user_dependency,
+    db: db_dependency,
+    todo_request: TodoRequest,
+    todo_id: int = Path(gt=0),
 ):
-    todo = db.query(Todos).filter(Todos.id == todo_id).first()
+    todo = (
+        db.query(Todos)
+        .filter(Todos.id == todo_id)
+        .filter(Todos.owner_id == user["id"])
+        .first()
+    )
     if todo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
@@ -79,8 +94,15 @@ async def update_todo(
 
 
 @router.delete("/{todo_id}", status_code=status.HTTP_200_OK)
-async def delete_todo(db: db_dependency, todo_id: int = Path(gt=0)):
-    todo = db.query(Todos).filter(Todos.id == todo_id).first()
+async def delete_todo(
+    user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)
+):
+    todo = (
+        db.query(Todos)
+        .filter(Todos.id == todo_id)
+        .filter(Todos.owner_id == user["id"])
+        .first()
+    )
     if todo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
