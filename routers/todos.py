@@ -1,10 +1,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path
-from sqlalchemy.orm import Session
 from starlette import status
 
-from database import SessionLocal
+from database import db_dependency
 from models import Todos
 from requests import TodoRequest
 
@@ -15,16 +14,6 @@ router = APIRouter(
     tags=["Todos"],
 )
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
