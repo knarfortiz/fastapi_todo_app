@@ -13,13 +13,16 @@ from models import Users
 from requests import CreateUserRequest
 from responses import Token
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/auth",
+    tags=["Auth"],
+)
 
 SECRET_KEY = "030993fb623822b969f4b7d5e40ac517762a5df692064b54cf3c9ae62baeec13"
 ALGORITHM = "HS256"
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 def get_db():
     db = SessionLocal()
@@ -63,12 +66,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
 
-@router.get("/auth")
+@router.get("/")
 async def get_user():
     return {"user": "authenticated"}
 
 
-@router.post("/auth", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, user_request: CreateUserRequest):
     user = Users(
         email=user_request.email,
